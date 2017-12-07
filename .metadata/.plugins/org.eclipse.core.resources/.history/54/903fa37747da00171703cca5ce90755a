@@ -1,0 +1,147 @@
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
+
+@SuppressWarnings("serial")
+/**
+ * Initial dialog that prompts user to enter the the amount of stones to start with
+ * and the layout to be chosen.
+ * 
+ * @author Group 2
+ *
+ */
+public class InitialDialog extends JDialog {
+
+	private int stones;
+	private Container frame;
+	private MyLayout layout;
+
+	/**
+	 * Constructs an initial dialog.
+	 * @param owner		the frame that owns this dialog
+	 */
+	public InitialDialog(Frame owner) {
+		// Constructor: owner will be the View, set to true to hide display before
+		// starting the game
+		super(owner, true);
+	
+        // Set frame header and size
+        setTitle("Play Mancala");
+		setSize(400, 150);
+		
+		// Default settings
+		stones = 3;
+        layout = new DefaultLayout();
+		
+		// Stone display
+		frame = getContentPane();
+		JPanel stonePanel = new JPanel();
+		JLabel stoneLabel = new JLabel("Choose the number of stones:");
+		JRadioButton three = new JRadioButton("3", true);
+		JRadioButton four = new JRadioButton("4");
+		ButtonGroup stoneGroup = new ButtonGroup();
+		
+		stonePanel.add(stoneLabel);
+		stonePanel.add(three);
+		stonePanel.add(four);
+		stoneGroup.add(three);
+		stoneGroup.add(four);
+		
+		// Layout display
+		JPanel layoutPanel = new JPanel();
+		JLabel layoutLabel = new JLabel("Choose initial layout:");
+		JRadioButton simple = new JRadioButton("Simple", true);
+		JRadioButton fancy = new JRadioButton("Fancy");
+		ButtonGroup layoutGroup = new ButtonGroup();
+		
+		layoutPanel.add(layoutLabel);
+		layoutPanel.add(simple);
+		layoutPanel.add(fancy);
+		layoutGroup.add(simple);
+		layoutGroup.add(fancy);
+		
+		JButton start = new JButton("START");
+		
+		three.addActionListener(setStones(3));
+		four.addActionListener(setStones(4));
+		simple.addActionListener(setLayout("simple"));
+		fancy.addActionListener(setLayout("fancy"));
+		// used to start/open the game
+		start.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				frame.setVisible(false);
+				dispose();
+			}
+		});
+
+		frame.setLayout(new BorderLayout());
+		frame.add(stonePanel, BorderLayout.NORTH);
+		frame.add(layoutPanel, BorderLayout.CENTER);
+		frame.add(start, BorderLayout.SOUTH);
+		setResizable(false);
+	}
+
+	/**
+	 * Sets the amount of stones chosen either 3 or 4 stones
+	 * 
+	 * @param i
+	 * @return
+	 */
+	private ActionListener setStones(final int i) {
+		return new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				stones = i;
+			}
+		};
+	}
+	
+	/**
+	 * Sets the chosen layout;
+	 * @param string
+	 * @return
+	 */
+	private ActionListener setLayout(String string) 
+	{
+		return new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+                if(string.equals("simple")) {
+					layout = new DefaultLayout();
+                }
+                else if(string.equals("fancy")){
+				layout = new FancyLayout();
+                }
+			}
+		};
+	}
+
+	/**
+	 * getter method for the stones
+	 * 
+	 * @return
+	 */
+	public int getStones() {
+		return stones;
+	}
+	
+	/**
+	 * getter method for layout
+	 * @return
+	 */
+	public MyLayout getMyLayout() {
+		return this.layout;
+	}
+
+}

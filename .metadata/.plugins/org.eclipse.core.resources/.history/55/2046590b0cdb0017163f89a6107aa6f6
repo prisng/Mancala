@@ -1,0 +1,300 @@
+
+import java.util.ArrayList;
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+/**
+ * A model that holds all the data for the Mancala game.
+ * 
+ * @author Group 2
+ *
+ */
+public class MancalaModel {
+	
+	// Game constants
+	public static final int PLAYERS = 2;
+	public static final int PITS = 6;
+	private static final int MAX_UNDOS = 3;
+	
+	// Data structure to hold pit data
+	private int[][] pits;
+	private int[] mancalaPits;
+	private int[][] clone_pits;
+	private int[] clone_mancalaPits;
+	
+	// Player data
+	private int currentPlayer;
+	private int currentPlayerUndo;
+	private int[] undoCount;
+	private boolean undo;
+	private boolean extraTurn;
+	private boolean gameOver;
+
+	// Data structure for Views
+	private ArrayList<ChangeListener> listeners;
+	
+	/**
+	 * Constructs a model for the Mancala game. Creates all of the pits and players
+	 * with undo counts.
+	 * @param stones	the number of stones in each pit
+	 */
+	public MancalaModel(int stones) {
+		// Create a 2D array with 2 rows (PLAYERS) and 6 pits (PITS)
+		pits = new int[PLAYERS][PITS];
+		
+		// Create 2 Mancala pits for each player
+		mancalaPits = new int[PLAYERS];
+		undoCount = new int[PLAYERS];
+		clone_pits = new int[PLAYERS][];
+		
+		listeners = new ArrayList<ChangeListener>();
+		gameOver = false;
+		
+		// Initialize beginning game data (pits and undo counts)
+		for (int row = 0; row < PLAYERS; row++) {
+			mancalaPits[row] = 0;
+			undoCount[row] = 0;
+			for (int col = 0; col < PITS; col++)
+				pits[row][col] = stones;
+		}
+		
+		// Set the current player
+		currentPlayer = 0;
+		undo = false;
+		extraTurn = false;
+		currentPlayerUndo = 0;
+		setClone();
+	}
+	
+	/**
+	 * Attaches a ChangeListener to this Mancala model.
+	 * @param listener	the ChangeListener to be attached
+	 */
+	public void attach(ChangeListener listener) {
+		listeners.add(listener);
+	}
+	
+	/**
+	 * Notifies the View (observer) of the changes in the Mancala model.
+	 */
+	public void notifyView() {
+		for (ChangeListener l : listeners) {
+			l.stateChanged(new ChangeEvent(this));
+		}
+	}
+
+	/**
+	 * Moves the stones in the pits and distributes them counterclockwise
+	 * to the other pits on the board.
+	 * @param player	the player who is moving the stones
+	 * @param pit		the pit containing the stones to be moved
+	 */
+	public void move(int player, int pit) {
+		// Do not move if not the current player's turn or if pit is empty
+		if (player != currentPlayer || pits[player][pit] == 0) {
+			return;
+		}
+
+		// Clone the data for possible undoing
+		setClone();
+		if (extraTurn == true) {
+			undoCount[player] = 0;
+			extraTurn = false;
+		} else if (undoCount[player] == 0) {
+			undoCount[nextPlayer(player)] = 0;
+			currentPlayerUndo = player;
+		}
+
+		undo = true;
+		int stones = pits[player][pit];
+		pits[player][pit] = 0;
+		while (stones > 0) {
+			pit = nextPit(pit);
+			if (pit == 0) {
+				if (player == currentPlayer) {
+					++mancalaPits[player];
+					--stones;
+					if (stones <= 0) {
+						checkEmpty();
+						extraTurn = true;
+						notifyView(); // Notify View of changes in the model
+						return;
+					}
+				}
+				player = nextPlayer(player);
+			}
+			++pits[player][pit];
+			--stones;
+		}
+		endTurn(player, pit);
+	}
+
+	/**
+	 * Undos the current player's turn (up to 3 times per player only).
+	 */
+	public void undo() {
+		// Do not undo if game is over, undo is false, or player has max undos
+		if (isGameOver() || !undo || undoCount[currentPlayerUndo] == MAX_UNDOS) {
+			return;
+		}
+
+		// Clone the data for undoing
+		for (int i = 0; i < PLAYERS; i++) {
+			pits[i] = clone_pits[i].clone();
+		}
+
+		mancalaPits = clone_mancalaPits.clone();
+		undoCount[currentPlayerUndo]++;
+		currentPlayer = currentPlayerUndo;
+		undo = false;
+		extraTurn = false;
+		notifyView();	// Notify View of changes in the Model
+
+	}
+
+	/**
+	 * Checks if the game is over.
+	 * @return	true if the game is over
+	 * 			false if the game is not over
+	 */
+	public boolean isGameOver() {
+		return gameOver;
+	}
+
+	/**
+	 * Gets the data in the pits.
+	 * @return	the data in the pits
+	 */
+	public int[][] getPits() {
+		return pits.clone();
+	}
+
+	/**
+	 * Gets the data in the Mancala pits.
+	 * @return	the data in the Mancala pits
+	 */
+	public int[] getMancalas() {
+		return mancalaPits.clone();
+	}
+
+	/**
+	 * Clones the pit and Mancala pit data for possible undos.
+	 */
+	private void setClone() {
+		clone_mancalaPits = mancalaPits.clone();
+		for (int i = 0; i < PLAYERS; i++)
+			clone_pits[i] = pits[i].clone();
+	}
+
+	/**
+	 * Method to see of the person's turn has ended yet
+	 * 
+	 * @param player
+	 * @param pit
+	 */
+	private void endTurn(int player, int pit) {
+		if (player == currentPlayer && pits[player][pit] == 1) {
+			mancalaPits[player] += 1 + pits[nextPlayer(player)][PITS - pit - 1];
+			pits[player][pit] = 0;
+			pits[nextPlayer(player)][PITS - pit - 1] = 0;
+			extraTurn = true;
+		} else {
+			currentPlayer = nextPlayer(currentPlayer);
+		}
+
+		checkEmpty();
+
+		notifyView();	// Notify View of changes in the Model
+
+	}
+
+	/**
+	 * checks if the pits are empty or not
+	 */
+	private void checkEmpty() {
+		int[][] checkPits = getPits();
+		int empty;
+		for (int i = 0; i < PLAYERS; i++) {
+			empty = 0;
+			for (int j = 0; j < PITS; j++) {
+				if (checkPits[i][j] == 0)
+					empty++;
+			}
+
+			if (empty == PITS) {
+				endGame(nextPlayer(i));
+				break;
+			}
+		}
+	}
+
+	/**
+	 * checks if the game is over
+	 * 
+	 * @param side
+	 */
+	private void endGame(int side) {
+		gameOver = true;
+
+		for (int i = 0; i < PITS; i++) {
+			mancalaPits[side] += pits[side][i];
+			pits[side][i] = 0;
+		}
+
+		if (mancalaPits[currentPlayer] == mancalaPits[nextPlayer(currentPlayer)])
+			currentPlayer = -1;
+		else if (mancalaPits[currentPlayer] < mancalaPits[nextPlayer(currentPlayer)])
+			currentPlayer = nextPlayer(currentPlayer);
+	}
+
+	/**
+	 * To keep count of the pits
+	 * @param pit
+	 * @return
+	 */
+	private int nextPit(int pit) {
+		if (++pit == PITS)
+			pit = 0;
+		return pit;
+	}
+
+	/**
+	 * To keep count of the players
+	 * @param player
+	 * @return
+	 */
+	private int nextPlayer(int player) {
+		if (++player == PLAYERS)
+			player = 0;
+		return player;
+	}
+
+	/**
+	 * Getter method for the player at his turn
+	 * 
+	 * @return
+	 */
+	public int getActive() {
+		return currentPlayer;
+	}
+
+	/**
+	 * getter method to shows who turn it is
+	 * 
+	 * @return
+	 */
+	public String getTurns() {
+		return "Player " + (currentPlayer + 1) + "'s Move";
+	}
+
+	/**
+	 * getter method for the undo count limited to 3 a turn
+	 * 
+	 * @return
+	 */
+	public int getUndoCount() {
+		return MAX_UNDOS - undoCount[currentPlayerUndo];
+	}
+
+}

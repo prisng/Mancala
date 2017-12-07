@@ -1,0 +1,15 @@
+
+/**
+ * Tester class.
+ * 
+ * @author Group 2
+ *
+ */
+public class MancalaTest {
+
+	public static void main(String[] args)
+	{
+		MancalaView frame = new MancalaView();
+	
+	}
+}

@@ -1,0 +1,64 @@
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
+import javax.imageio.ImageIO;
+
+/**
+ * Concrete Strategy. Represents a fancy Layout with a wooden background and
+ * blue stones.
+ * 
+ * @author Group 2
+ * 
+ */
+public class FancyLayout extends MyLayout {
+	private Color transparent = new Color(255, 255, 255, 125);
+	
+	/**
+	 * Constructs a fancy wood layout with blue stones.
+	 */
+	public FancyLayout() {
+		super();
+		try {
+			setBackground(ImageIO.read(new File("fancy_background.png")));	// wood background
+			setStone(ImageIO.read(new File("mancala_stone2.png")));	// blue stones
+		} catch (Exception e) {
+			setBackground(null);
+		}
+	}
+
+	/**
+	 * Draws the fancy layout.
+	 * @param g					the background image of the board
+	 * @param b					the board
+	 * @param pitsData			the data of the pits
+	 * @param mancalaPitsData	the data of the Mancala pits
+	 */
+	@Override
+	public void redraw(Graphics g, Board b, int[][] pitsData, int[] mancalaPitsData) {
+		g.drawImage(getBackground(), 0, 0, 500, 350, b);
+
+		Graphics2D g2 = (Graphics2D) g;
+
+		for (int i = 0; i < getPits().length; i++)
+			for (int j = 0; j < pitsData[i].length; j++) {
+				Rectangle2D.Double pits = (Rectangle2D.Double) getPits()[i][j];
+				g2.setPaint(transparent);
+				g2.fill(pits);
+				g2.draw(pits);
+				for (int k = 0; k < pitsData[i][j]; k++) {
+					drawStone(getPits()[i][j], g, b, k);
+				}
+			}
+		for (int l = 0; l < mancalaPitsData.length; l++) {
+			Rectangle2D.Double mancalaPits = (Rectangle2D.Double) getMancalaPits()[l];
+			g2.fill(mancalaPits);
+			g2.draw(mancalaPits);
+			for (int m = 0; m < mancalaPitsData[l]; m++) {
+				drawStone(getMancalaPits()[l], g, b, m);
+			}
+		}
+	}
+
+}

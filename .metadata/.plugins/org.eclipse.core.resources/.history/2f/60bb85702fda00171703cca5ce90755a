@@ -1,0 +1,68 @@
+
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.geom.Rectangle2D;
+import javax.swing.JComponent;
+
+/**
+ * This class takes everything in context using delegation from our strategy
+ * pattern class (MyLayout) Which every layout is chosen, it will be the board
+ * for that particular game.
+ * 
+ * @author Team Zebra
+ *
+ */
+@SuppressWarnings("serial")
+public class Board extends JComponent {
+
+	private int[][] pits;
+	private int[] mancalas;
+	private MyLayout layout;
+
+	/**
+	 * Constructor for the board
+	 * 
+	 * @param ml
+	 */
+	public Board(MyLayout ml) {
+		this.layout = ml;
+	}
+
+	/**
+	 * gets the two rectangle pits (Mancala pits)
+	 * 
+	 * @return
+	 */
+	public Rectangle2D.Double[][] getPitRectangles() {
+		return layout.getPitRects();
+	}
+
+	/**
+	 * creates the size of the board
+	 * 
+	 * @param w
+	 * @param h
+	 */
+	public void setBoardSize(int w, int h) {
+		setPreferredSize(new Dimension(w, h));
+		layout.setSize(w, h);
+	}
+
+	/**
+	 * sets the data from the board
+	 * 
+	 * @param p
+	 * @param m
+	 */
+	public void setData(int[][] p, int[] m) {
+		this.pits = p;
+		this.mancalas = m;
+	}
+
+	/**
+	 * draws out the board and layout
+	 */
+	public void paintComponent(Graphics g) {
+		layout.redraw(g, this, pits, mancalas);
+	}
+}

@@ -1,0 +1,64 @@
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
+
+import javax.imageio.ImageIO;
+
+/**
+ * Conrete Strategy to choosing a layout In this case, this is the "Fancy"
+ * layout
+ * 
+ * @author Group 2
+ *
+ */
+public class FancyLayout extends MyLayout {
+	private Color transparent = new Color(255, 255, 255, 125);
+	
+	/**
+	 * Constructor to set the "Fancy" layout and stone image
+	 */
+	public FancyLayout() {
+		super();
+		try {
+			setBg(ImageIO.read(new File("fancy_background.png")));	// wood background
+			setStone(ImageIO.read(new File("mancala_stone2.png")));	// blue stones
+		} catch (Exception e) {
+			setBg(null);
+		}
+	}
+
+	/**
+	 * Draws the "Fancy" layout that we created if chosen
+	 * 
+	 * @param Graphics
+	 *            g, Board b, int[][] pitsData, int[] mancalas Data
+	 */
+	@Override
+	public void redraw(Graphics g, Board b, int[][] pitsData, int[] mancalasData) {
+		g.drawImage(getBackground(), 0, 0, 500, 350, b);
+
+		Graphics2D g2 = (Graphics2D) g;
+
+		for (int i = 0; i < getPits().length; i++)
+			for (int j = 0; j < pitsData[i].length; j++) {
+				Rectangle2D.Double pits = (Rectangle2D.Double) getPits()[i][j];
+				g2.setPaint(transparent);
+				g2.fill(pits);
+				g2.draw(pits);
+				for (int k = 0; k < pitsData[i][j]; k++) {
+					drawStone(getPits()[i][j], g, b, k);
+				}
+			}
+		for (int l = 0; l < mancalasData.length; l++) {
+			Rectangle2D.Double mancalaPits = (Rectangle2D.Double) getMancalaPits()[l];
+			g2.fill(mancalaPits);
+			g2.draw(mancalaPits);
+			for (int m = 0; m < mancalasData[l]; m++) {
+				drawStone(getMancalaPits()[l], g, b, m);
+			}
+		}
+	}
+
+}

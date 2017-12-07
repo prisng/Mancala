@@ -1,0 +1,144 @@
+
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.geom.Rectangle2D;
+import java.util.Random;
+
+/**
+ * *** Strategy ***
+ * Strategy class that defines the common algorithms for creating the
+ * layout of the Mancala board.
+ * 
+ * @author Group 2
+ *
+ */
+public abstract class MyLayout {
+
+	private Rectangle2D.Double[][] pits;
+	private Rectangle2D.Double[] mancalaPits;
+	private static Random rand = new Random();
+	private Image stone;
+	private Image background;
+
+
+	/**
+	 * Constructs this layout.
+	 */
+	public MyLayout() {
+		this.mancalaPits = new Rectangle2D.Double[2];
+		this.pits = new Rectangle2D.Double[2][6];
+	}
+
+	/**
+	 * Gets the Mancala pits.
+	 * @return	the Mancala pits as a 2D rectangle array
+	 */
+	public Rectangle2D.Double[][] getPitRects() {
+		return pits;
+	}
+
+	/**
+	 * Sets the width and height of the pits and Mancala pits.
+	 * @param w		the width to be set
+	 * @param h		the height to be set
+	 */
+	public void setSize(int w, int h) {
+		int gap = 10;
+		int c = 100;
+		// Set space in between sides
+		int space = 100;
+
+		// Set size for Mancala pits
+		mancalaPits[0] = new Rectangle2D.Double(w - 2 * gap - c, c, c, h - 2 * c);
+		mancalaPits[1] = new Rectangle2D.Double(gap, c, c, h - 2 * c);
+
+		int n = 5;
+		for (int i = 0; i < 6; i++) {
+			pits[0][i] = new Rectangle2D.Double(gap + c + gap * (i + 1) + c * i, h - space - c, c, c);
+			pits[1][i] = new Rectangle2D.Double(gap + c + gap * (n + 1) + c * n, space, c, c);
+			n--;
+		}
+	}
+
+	/**
+	 * Used to redraw a specifc layout once overridden
+	 * 
+	 * @param g
+	 * @param b
+	 * @param pitsData
+	 * @param mancalasData
+	 */
+	public abstract void redraw(Graphics g, Board b, int[][] pitsData, int[] mancalasData);
+
+	/**
+	 * draws the stones
+	 * 
+	 * @param r
+	 * @param g
+	 * @param b
+	 * @param n
+	 */
+	protected void drawStone(Rectangle2D.Double r, Graphics g, Board b, int n) {
+		rand.setSeed((int) r.getX() * n + (int) r.getY() * n + n * n);
+		int x = rand.nextInt((int) r.getWidth() - stone.getWidth(b));
+		int y = rand.nextInt((int) r.getHeight() - stone.getHeight(b));
+		g.drawImage(stone, (int) r.getX() + x, (int) r.getY() + y, stone.getWidth(b), stone.getHeight(b), b);
+	}
+
+	/**
+	 * @return the pits
+	 */
+	public Rectangle2D.Double[][] getPits() {
+		return pits;
+	}
+
+	/**
+	 * @param pits	the pits to set
+	 */
+	public void setPits(Rectangle2D.Double[][] pits) {
+		this.pits = pits;
+	}
+
+	/**
+	 * @return	the mancala pits
+	 */
+	public Rectangle2D.Double[] getMancalaPits() {
+		return mancalaPits;
+	}
+
+	/**
+	 * @param mancalas	the mancalas to set
+	 */
+	public void setMancalaPits(Rectangle2D.Double[] mancalas) {
+		this.mancalaPits = mancalas;
+	}
+
+	/**
+	 * @return the stone
+	 */
+	public Image getStone() {
+		return stone;
+	}
+
+	/**
+	 * @param stone		the stone to set
+	 */
+	public void setStone(Image stone) {
+		this.stone = stone;
+	}
+
+	/**
+	 * @return	the background image
+	 */
+	public Image getBackground() {
+		return background;
+	}
+
+	/**
+	 * @param background	the background image to set
+	 */
+	public void setBackground(Image background) {
+		this.background = background;
+	}
+
+}

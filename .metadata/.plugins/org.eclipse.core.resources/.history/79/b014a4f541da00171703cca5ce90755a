@@ -1,0 +1,60 @@
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
+
+import javax.imageio.ImageIO;
+
+/**
+ * *** Concrete Strategy ***
+ * Concrete Strategy. Represents a default Layout with a simple background and
+ * green stones.
+ * 
+ * @author Group 2
+ * 
+ */
+public class DefaultLayout extends MyLayout {
+
+	/**
+	 * Constructs a default layout with green stones.
+	 */
+	public DefaultLayout() {
+		super();
+		try {
+			setBackground(ImageIO.read(new File("default_background.png"))); // default background
+			setStone(ImageIO.read(new File("mancala_stone.png")));	// green stones
+		} catch (Exception e) {
+			setBackground(null);
+		}
+	}
+
+	/**
+	 * Draws the default layout.
+	 * @param g					the background image of the board
+	 * @param b					the board
+	 * @param pitsData			the data of the pits
+	 * @param mancalaPitsData	the data of the Mancala pits
+	 */
+	public void redraw(Graphics g, Board b, int[][] pitsData, int[] mancalasData) {
+		// Draw the background image
+		g.drawImage(getBackground(), 0, 0, 500, 350, b);
+
+		Graphics2D g2 = (Graphics2D) g;
+
+		// Draw the pits
+		for (int i = 0; i < getPits().length; i++)
+			for (int j = 0; j < pitsData[i].length; j++) {
+				g2.draw((Rectangle2D.Double) getPits()[i][j]);
+				for (int k = 0; k < pitsData[i][j]; k++) {
+					drawStone(getPits()[i][j], g, b, k);
+				}
+			}
+		for (int l = 0; l < mancalasData.length; l++) {
+			g2.draw((Rectangle2D.Double) getMancalaPits()[l]);
+			for (int m = 0; m < mancalasData[l]; m++) {
+				drawStone(getMancalaPits()[l], g, b, m);
+			}
+		}
+	}
+
+}
